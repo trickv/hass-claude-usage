@@ -42,3 +42,7 @@ The integration uses Anthropic's OAuth flow:
 ## Options
 
 - **Update interval** - How often to poll the usage API (default: 300 seconds, min: 60, max: 3600)
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
