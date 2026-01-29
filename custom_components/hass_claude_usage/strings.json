@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Authenticate with Claude",
+        "description": "1. Open this URL in your browser:\n\n{oauth_url}\n\n2. Authorize the application\n3. Copy the authorization code from the redirect page\n4. Paste it below",
+        "data": {
+          "auth_code": "Authorization code"
+        }
+      }
+    },
+    "error": {
+      "missing_code": "Please enter the authorization code",
+      "exchange_failed": "Failed to exchange code for tokens. Please try again."
+    },
+    "abort": {
+      "already_configured": "Claude Usage is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Claude Usage Options",
+        "description": "Configure polling interval. Note: the usage API has rate limits, so avoid setting this too low.",
+        "data": {
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  }
+}
