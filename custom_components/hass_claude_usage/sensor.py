@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -49,15 +50,14 @@ class ClaudeUsageSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEntity)
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._key = key
+        self._is_timestamp = device_class == "timestamp"
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
         self._attr_name = name
         self._attr_native_unit_of_measurement = unit
         self._attr_icon = icon
-        if device_class == "timestamp":
+        if self._is_timestamp:
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
-        elif unit == "%":
-            self._attr_state_class = SensorStateClass.MEASUREMENT
         elif unit is not None:
             self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_device_info = DeviceInfo(
@@ -81,4 +81,7 @@ class ClaudeUsageSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEntity)
         """Return the sensor value."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator.data.get(self._key)
+        value = self.coordinator.data.get(self._key)
+        if value is not None and self._is_timestamp:
+            return datetime.fromisoformat(value)
+        return value
