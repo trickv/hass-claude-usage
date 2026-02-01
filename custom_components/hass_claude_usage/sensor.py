@@ -63,7 +63,6 @@ class ClaudeUsageSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEntity)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Claude Usage",
-            manufacturer="Anthropic",
             entry_type=DeviceEntryType.SERVICE,
         )
 
