@@ -232,7 +232,7 @@ challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 4. **Notifications:** HA automation triggers when usage exceeds thresholds:
    - Session usage >80%
-   - Weekly usage >90%
+   - Week usage >90%
    - Extra usage approaching limit
 
 5. **OAuth Browser Flow:** Implement proper OAuth callback server for smoother UX (complex, see Design Decisions above)

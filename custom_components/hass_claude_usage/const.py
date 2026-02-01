@@ -28,7 +28,7 @@ CONF_PKCE_VERIFIER = "pkce_verifier"
 SENSOR_DEFINITIONS = [
     ("session_usage_percent", "Session Usage", "%", "mdi:timer-sand", None),
     ("session_reset_time", "Session Reset Time", None, "mdi:timer-refresh", "timestamp"),
-    ("week_usage_percent", "Weekly Usage", "%", "mdi:calendar-week", None),
+    ("week_usage_percent", "Week Usage", "%", "mdi:calendar-week", None),
     ("week_reset_time", "Weekly Reset Time", None, "mdi:calendar-clock", "timestamp"),
     ("week_sonnet_usage_percent", "Weekly Sonnet Usage", "%", "mdi:calendar-week", None),
     ("week_sonnet_reset_time", "Weekly Sonnet Reset Time", None, "mdi:calendar-clock", "timestamp"),
