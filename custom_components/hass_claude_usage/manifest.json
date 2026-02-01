@@ -3,9 +3,9 @@
   "name": "Claude Usage",
   "codeowners": ["@trickv"],
   "config_flow": true,
-  "documentation": "https://github.com/trickv/claude-hass-usage-addon",
+  "documentation": "https://github.com/trickv/hass-claude-usage",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/trickv/claude-hass-usage-addon/issues",
+  "issue_tracker": "https://github.com/trickv/hass-claude-usage/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "2"
 }
