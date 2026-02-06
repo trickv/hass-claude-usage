@@ -20,9 +20,10 @@ A custom Home Assistant integration that monitors your Claude (Anthropic) subscr
 ### HACS (recommended)
 
 1. Add this repository as a custom repository in HACS
-2. Install "Claude Usage"
-3. Restart Home Assistant
+2. Restart Home Assistant
+3. Install "Claude Usage"
 4. Go to Settings → Devices & Services → Add Integration → "Claude Usage"
+5. Follow the instructions
 
 ### Manual
 
@@ -41,8 +42,10 @@ The integration uses Anthropic's OAuth flow:
 
 ## Options
 
-- **Update interval** - How often to poll the usage API (default: 300 seconds, min: 60, max: 3600)
+- **Update interval** - How often to poll the usage API (default: 300 seconds, min: 60, max: 3600).
 
+## Rate Limit
+I have found Anthropic rate limits the usage API when you hit it too fast; usually a couple of dozen bursts in a minute is enough. The backoff time is around 24 hours, during which you won't be able to see your usage here, in Claude Code, or on https://claude.ai.  I recommend keeping the polling frequency at 300 :)
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
