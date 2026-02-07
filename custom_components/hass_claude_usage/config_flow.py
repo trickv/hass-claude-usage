@@ -23,6 +23,7 @@ from .const import (
     CONF_ACCOUNT_NAME,
     CONF_EXPIRES_AT,
     CONF_REFRESH_TOKEN,
+    CONF_SUBSCRIPTION_LEVEL,
     CONF_UPDATE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -96,18 +97,31 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                 if token_data is None:
                     errors["auth_code"] = "exchange_failed"
                 else:
-                    # Fetch account name for display
-                    account_name = await self._fetch_account_name(token_data["access_token"])
+                    # Fetch account info for display
+                    account_name, subscription_level = await self._fetch_account_info(
+                        token_data["access_token"]
+                    )
+
+                    # Build title with name and subscription level
+                    title_parts = ["Claude Usage"]
+                    if account_name:
+                        title_parts.append(f"({account_name}")
+                        if subscription_level:
+                            title_parts.append(f"- {subscription_level})")
+                        else:
+                            title_parts[-1] += ")"
+                    title = " ".join(title_parts)
 
                     await self.async_set_unique_id(DOMAIN)
                     self._abort_if_unique_id_configured()
                     return self.async_create_entry(
-                        title=f"Claude Usage ({account_name})" if account_name else "Claude Usage",
+                        title=title,
                         data={
                             CONF_ACCESS_TOKEN: token_data["access_token"],
                             CONF_REFRESH_TOKEN: token_data.get("refresh_token", ""),
                             CONF_EXPIRES_AT: time.time() + token_data.get("expires_in", 3600),
                             CONF_ACCOUNT_NAME: account_name,
+                            CONF_SUBSCRIPTION_LEVEL: subscription_level,
                         },
                         options={
                             CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL,
@@ -163,8 +177,8 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Token exchange request failed")
             return None
 
-    async def _fetch_account_name(self, access_token: str) -> str | None:
-        """Fetch the account display name from the profile API."""
+    async def _fetch_account_info(self, access_token: str) -> tuple[str | None, str | None]:
+        """Fetch account name and subscription level from the profile API."""
         try:
             session = aiohttp_client.async_get_clientsession(self.hass)
             resp = await session.get(
@@ -177,17 +191,28 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             )
             if not resp.ok:
                 _LOGGER.warning("Failed to fetch account profile (%s)", resp.status)
-                return None
+                return None, None
             profile = await resp.json()
             account = profile.get("account", {})
-            return (
+
+            # Get account name
+            account_name = (
                 account.get("display_name")
                 or account.get("full_name")
                 or account.get("email")
             )
+
+            # Get subscription level
+            subscription_level = None
+            if account.get("has_claude_max"):
+                subscription_level = "Max"
+            elif account.get("has_claude_pro"):
+                subscription_level = "Pro"
+
+            return account_name, subscription_level
         except (aiohttp.ClientError, KeyError):
-            _LOGGER.exception("Error fetching account name")
-            return None
+            _LOGGER.exception("Error fetching account info")
+            return None, None
 
     @staticmethod
     @callback
