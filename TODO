@@ -2,7 +2,6 @@
 
 - Work on the onboarding screen bugs
 - Can the integration info view show my anthropic account name? so if i have two accounts logged in / two instances of the integration. Will require exploration of api.
-- Figure out recommended git tagging / GitHub release strategy so consumers of this don't have to add git master to their HACS installs. Don't use semver; just do major version numbers.
 - Put screenshots in README to explain what this is.
 - Make an icon!
 - figure out if anthropic is sending any decimal places after % else set sensor precisions to no decimal places
