@@ -3,5 +3,4 @@
 - Work on the onboarding screen bugs
 - Can the integration info view show my anthropic account name? so if i have two accounts logged in / two instances of the integration. Will require exploration of api.
 - Put screenshots in README to explain what this is.
-- Make an icon!
 - figure out if anthropic is sending any decimal places after % else set sensor precisions to no decimal places
