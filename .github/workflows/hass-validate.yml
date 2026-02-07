@@ -52,37 +52,22 @@ jobs:
           cd config
           python3 << 'EOF'
           import sys
-          import asyncio
-          from homeassistant import core, config_entries, setup
-          from homeassistant.helpers import device_registry, entity_registry
 
-          async def test_integration():
-              """Test that the integration can be imported and has valid config."""
-              hass = core.HomeAssistant(".")
-
-              # Initialize registries
-              await device_registry.async_get_registry(hass)
-              await entity_registry.async_get_registry(hass)
-
-              # Try to import the integration
-              try:
-                  from custom_components.hass_claude_usage import (
-                      DOMAIN,
-                      PLATFORMS,
-                      async_setup_entry,
-                      async_unload_entry,
-                  )
-                  print(f"✓ Successfully imported integration: {DOMAIN}")
-                  print(f"✓ Platforms: {PLATFORMS}")
-                  print("✓ Integration structure is valid")
-                  return True
-              except Exception as e:
-                  print(f"✗ Failed to import integration: {e}")
-                  import traceback
-                  traceback.print_exc()
-                  return False
-
-          # Run the test
-          result = asyncio.run(test_integration())
-          sys.exit(0 if result else 1)
+          # Try to import the integration
+          try:
+              from custom_components.hass_claude_usage import (
+                  DOMAIN,
+                  PLATFORMS,
+                  async_setup_entry,
+                  async_unload_entry,
+              )
+              print(f"✓ Successfully imported integration: {DOMAIN}")
+              print(f"✓ Platforms: {PLATFORMS}")
+              print("✓ Integration structure is valid")
+              sys.exit(0)
+          except Exception as e:
+              print(f"✗ Failed to import integration: {e}")
+              import traceback
+              traceback.print_exc()
+              sys.exit(1)
           EOF
