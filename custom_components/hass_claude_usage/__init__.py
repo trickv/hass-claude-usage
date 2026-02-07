@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -157,7 +157,7 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
         if utilization is not None and reset_time:
             try:
                 reset_dt = datetime.fromisoformat(reset_time)
-                now = datetime.now(timezone.utc)
+                now = datetime.now(UTC)
                 week_seconds = 7 * 24 * 60 * 60
                 elapsed = week_seconds - (reset_dt - now).total_seconds()
                 percent_elapsed = (elapsed / week_seconds) * 100
