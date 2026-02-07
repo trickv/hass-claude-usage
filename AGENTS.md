@@ -319,7 +319,55 @@ mypy custom_components/hass_claude_usage/
 - **Claude Code Usage Monitor:** Terminal-based usage monitor with ML predictions
 - **opencode-anthropic-auth:** Reusable OAuth library for Anthropic services
 
+## Release Process
+
+This project uses **major version numbering only** (1, 2, 3...). No semver.
+
+### Creating a Release
+
+1. **Update manifest.json version**:
+   ```bash
+   # Edit custom_components/hass_claude_usage/manifest.json
+   # Change "version": "2" to "version": "3"
+   ```
+
+2. **Commit the version bump**:
+   ```bash
+   git add custom_components/hass_claude_usage/manifest.json
+   git commit -m "Bump version to 3"
+   git push
+   ```
+
+3. **Create git tag**:
+   ```bash
+   git tag 3
+   git push origin 3
+   ```
+
+4. **Create GitHub release** (generates release notes automatically from commits):
+   ```bash
+   gh release create 3 --title "v3" --generate-notes
+   ```
+
+### HACS Requirements
+
+- HACS requires **GitHub Releases**, not just tags
+- The `version` field in `manifest.json` must match the latest release tag
+- HACS shows the 5 most recent releases to users during install/upgrade
+- Version must be compatible with AwesomeVersion (simple integers work fine)
+
 ## Version History
+
+### v2 (2026-02-06)
+- Renamed "Weekly Usage" to "Week Usage"
+- Fixed manifest URLs to point to correct repository
+- Switched to major version numbering
+- Removed misleading manufacturer attribution
+- Fixed OAuth security issues (separate state parameter, CSRF validation, shared aiohttp session)
+- Fixed token refresh response validation
+- Added error handling for malformed timestamps
+- Moved `generate_pkce` to config_flow module
+- Added Week Usage Pace sensor (shows if you're ahead/behind expected usage rate)
 
 ### v0.1.0 (2026-01-28)
 - Initial implementation
