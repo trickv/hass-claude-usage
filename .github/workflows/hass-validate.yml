@@ -1,0 +1,88 @@
+name: Home Assistant Integration Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  validate-hacs:
+    name: Validate with HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  validate-hassfest:
+    name: Validate with hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  test-load:
+    name: Test Integration Load
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Home Assistant
+        run: |
+          pip install homeassistant
+
+      - name: Copy integration to custom_components
+        run: |
+          mkdir -p config/custom_components
+          cp -r custom_components/hass_claude_usage config/custom_components/
+
+      - name: Test integration import
+        run: |
+          cd config
+          python3 << 'EOF'
+          import sys
+          import asyncio
+          from homeassistant import core, config_entries, setup
+          from homeassistant.helpers import device_registry, entity_registry
+
+          async def test_integration():
+              """Test that the integration can be imported and has valid config."""
+              hass = core.HomeAssistant(".")
+
+              # Initialize registries
+              await device_registry.async_get_registry(hass)
+              await entity_registry.async_get_registry(hass)
+
+              # Try to import the integration
+              try:
+                  from custom_components.hass_claude_usage import (
+                      DOMAIN,
+                      PLATFORMS,
+                      async_setup_entry,
+                      async_unload_entry,
+                  )
+                  print(f"✓ Successfully imported integration: {DOMAIN}")
+                  print(f"✓ Platforms: {PLATFORMS}")
+                  print("✓ Integration structure is valid")
+                  return True
+              except Exception as e:
+                  print(f"✗ Failed to import integration: {e}")
+                  import traceback
+                  traceback.print_exc()
+                  return False
+
+          # Run the test
+          result = asyncio.run(test_integration())
+          sys.exit(0 if result else 1)
+          EOF
