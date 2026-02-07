@@ -17,7 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import ClaudeUsageConfigEntry, ClaudeUsageCoordinator
-from .const import DOMAIN, SENSOR_DEFINITIONS
+from .const import CONF_ACCOUNT_NAME, DOMAIN, SENSOR_DEFINITIONS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,9 +63,13 @@ class ClaudeUsageSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEntity)
             self._attr_device_class = SensorDeviceClass.TIMESTAMP
         elif unit is not None:
             self._attr_state_class = SensorStateClass.MEASUREMENT
+
+        account_name = entry.data.get(CONF_ACCOUNT_NAME)
+        device_name = f"Claude Usage ({account_name})" if account_name else "Claude Usage"
+
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="Claude Usage",
+            name=device_name,
             entry_type=DeviceEntryType.SERVICE,
         )
 

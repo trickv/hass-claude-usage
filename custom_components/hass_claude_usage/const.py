@@ -11,6 +11,7 @@ OAUTH_SCOPES = "org:create_api_key user:profile user:inference"
 
 # API
 USAGE_API_URL = "https://api.anthropic.com/api/oauth/usage"
+PROFILE_API_URL = "https://api.anthropic.com/api/oauth/profile"
 API_BETA_HEADER = "oauth-2025-04-20"
 
 # Defaults
@@ -21,6 +22,7 @@ CONF_ACCESS_TOKEN = "access_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 CONF_EXPIRES_AT = "expires_at"
 CONF_UPDATE_INTERVAL = "update_interval"
+CONF_ACCOUNT_NAME = "account_name"
 
 # Sensor definitions: (key, name, unit, icon, device_class)
 # key corresponds to a path in the parsed usage data dict

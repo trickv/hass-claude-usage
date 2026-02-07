@@ -18,7 +18,9 @@ from homeassistant.core import callback
 from homeassistant.helpers import aiohttp_client
 
 from .const import (
+    API_BETA_HEADER,
     CONF_ACCESS_TOKEN,
+    CONF_ACCOUNT_NAME,
     CONF_EXPIRES_AT,
     CONF_REFRESH_TOKEN,
     CONF_UPDATE_INTERVAL,
@@ -29,6 +31,7 @@ from .const import (
     OAUTH_REDIRECT_URI,
     OAUTH_SCOPES,
     OAUTH_TOKEN_URL,
+    PROFILE_API_URL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,14 +96,18 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                 if token_data is None:
                     errors["auth_code"] = "exchange_failed"
                 else:
+                    # Fetch account name for display
+                    account_name = await self._fetch_account_name(token_data["access_token"])
+
                     await self.async_set_unique_id(DOMAIN)
                     self._abort_if_unique_id_configured()
                     return self.async_create_entry(
-                        title="Claude Usage",
+                        title=f"Claude Usage ({account_name})" if account_name else "Claude Usage",
                         data={
                             CONF_ACCESS_TOKEN: token_data["access_token"],
                             CONF_REFRESH_TOKEN: token_data.get("refresh_token", ""),
                             CONF_EXPIRES_AT: time.time() + token_data.get("expires_in", 3600),
+                            CONF_ACCOUNT_NAME: account_name,
                         },
                         options={
                             CONF_UPDATE_INTERVAL: DEFAULT_UPDATE_INTERVAL,
@@ -154,6 +161,32 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             return token_data
         except aiohttp.ClientError:
             _LOGGER.exception("Token exchange request failed")
+            return None
+
+    async def _fetch_account_name(self, access_token: str) -> str | None:
+        """Fetch the account display name from the profile API."""
+        try:
+            session = aiohttp_client.async_get_clientsession(self.hass)
+            resp = await session.get(
+                PROFILE_API_URL,
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "anthropic-beta": API_BETA_HEADER,
+                },
+                timeout=aiohttp.ClientTimeout(total=15),
+            )
+            if not resp.ok:
+                _LOGGER.warning("Failed to fetch account profile (%s)", resp.status)
+                return None
+            profile = await resp.json()
+            account = profile.get("account", {})
+            return (
+                account.get("display_name")
+                or account.get("full_name")
+                or account.get("email")
+            )
+        except (aiohttp.ClientError, KeyError):
+            _LOGGER.exception("Error fetching account name")
             return None
 
     @staticmethod
