@@ -33,7 +33,17 @@ jobs:
 
       - name: Check code formatting with black
         run: |
-          black --check custom_components/hass_claude_usage/
+          black --check custom_components/hass_claude_usage/ || (
+            echo "❌ Code formatting check failed!"
+            echo ""
+            echo "To fix, run:"
+            echo "  python3 -m pip install black"
+            echo "  black custom_components/hass_claude_usage/"
+            echo "  git add -u && git commit -m 'Format code with black'"
+            echo ""
+            echo "Or use the pre-commit hook (see .pre-commit-config.yaml)"
+            exit 1
+          )
 
       - name: Check import sorting with isort
         run: |

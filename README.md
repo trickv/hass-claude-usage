@@ -45,7 +45,31 @@ The integration uses Anthropic's OAuth flow:
 - **Update interval** - How often to poll the usage API (default: 300 seconds, min: 60, max: 3600).
 
 ## Rate Limit
+
 I have found Anthropic rate limits the usage API when you hit it too fast; usually a couple of dozen bursts in a minute is enough. The backoff time is around 24 hours, during which you won't be able to see your usage here, in Claude Code, or on https://claude.ai.  I recommend keeping the polling frequency at 300 :)
+
+## Development
+
+### Pre-commit Hook
+
+Install the pre-commit hook to automatically format code before committing:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+This will run black, isort, ruff, and other checks before each commit.
+
+### Manual Formatting
+
+```bash
+pip install black isort ruff
+black custom_components/hass_claude_usage/
+isort custom_components/hass_claude_usage/
+ruff check --fix custom_components/hass_claude_usage/
+```
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
