@@ -11,8 +11,7 @@ This document captures key architectural decisions, API discoveries, and design 
 
 ## Project Origin
 
-Refactored from a standalone daemon concept originally explored at:
-https://github.com/trickv/cc-playground/tree/master/cc-usage-graphs
+Refactored from a standalone daemon concept originally explored in the `cc-playground/cc-usage-graphs` project (private).
 
 ## Architecture Decisions
 

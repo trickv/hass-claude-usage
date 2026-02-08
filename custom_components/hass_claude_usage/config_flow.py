@@ -49,9 +49,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
         self._pkce_challenge: str | None = None
         self._state: str | None = None
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - show OAuth URL and instructions."""
         if user_input is not None:
             # User clicked "Next", proceed to auth code collection
@@ -61,29 +59,31 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
         self._pkce_verifier, self._pkce_challenge = generate_pkce()
         self._state = secrets.token_urlsafe(32)
 
-        params = urlencode({
-            "code": "true",
-            "client_id": OAUTH_CLIENT_ID,
-            "response_type": "code",
-            "redirect_uri": OAUTH_REDIRECT_URI,
-            "scope": OAUTH_SCOPES,
-            "code_challenge": self._pkce_challenge,
-            "code_challenge_method": "S256",
-            "state": self._state,
-        })
+        params = urlencode(
+            {
+                "code": "true",
+                "client_id": OAUTH_CLIENT_ID,
+                "response_type": "code",
+                "redirect_uri": OAUTH_REDIRECT_URI,
+                "scope": OAUTH_SCOPES,
+                "code_challenge": self._pkce_challenge,
+                "code_challenge_method": "S256",
+                "state": self._state,
+            }
+        )
         oauth_url = f"{OAUTH_AUTHORIZE_URL}?{params}"
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({
-                vol.Optional("oauth_url", default=oauth_url): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Optional("oauth_url", default=oauth_url): str,
+                }
+            ),
             description_placeholders={"oauth_url": oauth_url},
         )
 
-    async def async_step_auth(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_auth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the auth code collection step."""
         errors: dict[str, str] = {}
 
@@ -130,9 +130,11 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="auth",
-            data_schema=vol.Schema({
-                vol.Required("auth_code"): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required("auth_code"): str,
+                }
+            ),
             errors=errors,
         )
 
@@ -197,9 +199,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
 
             # Get account name
             account_name = (
-                account.get("display_name")
-                or account.get("full_name")
-                or account.get("email")
+                account.get("display_name") or account.get("full_name") or account.get("email")
             )
 
             # Get subscription level
@@ -224,9 +224,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
 class ClaudeUsageOptionsFlow(OptionsFlow):
     """Handle options for Claude Usage."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
@@ -237,11 +235,13 @@ class ClaudeUsageOptionsFlow(OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema({
-                vol.Required(CONF_UPDATE_INTERVAL, default=current_interval): vol.All(
-                    int, vol.Range(min=60, max=3600)
-                ),
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_UPDATE_INTERVAL, default=current_interval): vol.All(
+                        int, vol.Range(min=60, max=3600)
+                    ),
+                }
+            ),
         )
 
 
