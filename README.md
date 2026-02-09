@@ -2,6 +2,8 @@
 
 A custom Home Assistant integration that monitors your Claude (Anthropic) subscription usage.
 
+![Claude Usage Screenshot](screenshot.jpg)
+
 ## Sensors
 
 - **Session Usage** - Current 5-hour session utilization (%)

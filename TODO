@@ -1,6 +1,6 @@
 # TODO
 
-- Put screenshots in README to explain what this is.
 - figure out if anthropic is sending any decimal places after % else set sensor precisions to no decimal places
+- Can we bundle a dashboard?
 - Add repository topics to fix HACS validation warning (e.g., home-assistant, hacs, integration, claude, anthropic)
 - Optional: Submit to Home Assistant brands repo (https://github.com/home-assistant/brands)
