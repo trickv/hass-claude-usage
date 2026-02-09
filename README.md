@@ -1,6 +1,6 @@
 # Claude Usage - Home Assistant Integration
 
-A custom Home Assistant integration that monitors your Claude (Anthropic) subscription usage via OAuth.
+A custom Home Assistant integration that monitors your Claude (Anthropic) subscription usage.
 
 ## Sensors
 
