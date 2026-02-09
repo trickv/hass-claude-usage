@@ -1,0 +1,36 @@
+views:
+  - title: Home
+    cards:
+      - type: history-graph
+        entities:
+          - entity: sensor.claude_usage_session_usage
+            name: Session usage
+          - entity: sensor.claude_usage_weekly_usage
+            name: Weekly usage
+          - entity: sensor.claude_usage_week_usage_pace
+            name: Week usage pace
+        title: Claude Usage
+        hours_to_show: 24
+
+      - type: entities
+        entities:
+          - entity: sensor.claude_usage_session_reset_time
+            secondary_info: state
+            name: Session reset
+          - entity: sensor.claude_usage_weekly_reset_time
+            secondary_info: state
+            name: Week reset
+          - entity: sensor.claude_usage_session_usage
+            secondary_info: last-updated
+            name: Session usage
+          - entity: sensor.claude_usage_week_usage_pace
+            name: Week Usage Pace
+
+      - type: history-graph
+        entities:
+          - entity: sensor.claude_usage_extra_usage_credits
+            name: Credits
+          - entity: sensor.claude_usage_extra_usage_limit
+            name: Limit
+        hours_to_show: 24
+        title: Extra Usage

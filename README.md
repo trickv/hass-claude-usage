@@ -46,6 +46,18 @@ The integration uses Anthropic's OAuth flow:
 
 - **Update interval** - How often to poll the usage API (default: 300 seconds, min: 60, max: 3600).
 
+## Dashboard
+
+A pre-built dashboard is included in the `dashboards/` directory. To use it:
+
+1. Go to Settings → Dashboards → Add Dashboard
+2. Click the three-dot menu → "Edit Dashboard"
+3. Click the three-dot menu again → "Raw configuration editor"
+4. Copy the contents of `dashboards/claude_usage.yaml` and paste it
+5. Click "Save"
+
+Alternatively, you can manually add the cards to any existing dashboard by referencing the YAML file.
+
 ## Rate Limit
 
 I have found Anthropic rate limits the usage API when you hit it too fast; usually a couple of dozen bursts in a minute is enough. The backoff time is around 24 hours, during which you won't be able to see your usage here, in Claude Code, or on https://claude.ai.  I recommend keeping the polling frequency at 300 :)
