@@ -50,15 +50,15 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
         self._state: str | None = None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Handle the initial step - show OAuth URL and instructions."""
-        if user_input is not None:
-            # User clicked "Next", proceed to auth code collection
-            return await self.async_step_auth()
+        """Handle the user OAuth flow - single step."""
+        errors: dict[str, str] = {}
 
-        # Generate PKCE pair and a separate state for CSRF protection
-        self._pkce_verifier, self._pkce_challenge = generate_pkce()
-        self._state = secrets.token_urlsafe(32)
+        # Generate PKCE and state on first load
+        if self._pkce_verifier is None:
+            self._pkce_verifier, self._pkce_challenge = generate_pkce()
+            self._state = secrets.token_urlsafe(32)
 
+        # Build OAuth URL
         params = urlencode(
             {
                 "code": "true",
@@ -72,20 +72,6 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             }
         )
         oauth_url = f"{OAUTH_AUTHORIZE_URL}?{params}"
-
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Optional("oauth_url", default=oauth_url): str,
-                }
-            ),
-            description_placeholders={"oauth_url": oauth_url},
-        )
-
-    async def async_step_auth(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Handle the auth code collection step."""
-        errors: dict[str, str] = {}
 
         if user_input is not None:
             auth_code = user_input.get("auth_code", "").strip()
@@ -129,12 +115,13 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                     )
 
         return self.async_show_form(
-            step_id="auth",
+            step_id="user",
             data_schema=vol.Schema(
                 {
                     vol.Required("auth_code"): str,
                 }
             ),
+            description_placeholders={"url": oauth_url},
             errors=errors,
         )
 

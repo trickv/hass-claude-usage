@@ -2,17 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "Claude OAuth Setup - Step 1",
-        "description": "Copy the OAuth URL below, open it in your browser, and authorize the integration. Then click Submit to continue.",
+        "title": "Authenticate with Claude",
+        "description": "To authenticate, [open this link]({url}) and login at Claude.\n\nAfter authorizing, paste the authorization code below.\n\nNote: The code may include a '#' character - paste the entire string.",
         "data": {
-          "oauth_url": "OAuth URL (copy and open in browser)"
-        }
-      },
-      "auth": {
-        "title": "Enter Authorization Code",
-        "description": "Paste the authorization code from the redirect page.\n\nNote: The code may include a '#' character - you can paste the whole thing.",
-        "data": {
-          "auth_code": "Authorization code"
+          "auth_code": "Authorization Code"
         }
       }
     },
