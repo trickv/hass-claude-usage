@@ -45,16 +45,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) 
     return True
 
 
-async def async_unload_entry(
-    hass: HomeAssistant, entry: ClaudeUsageConfigEntry
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) -> bool:
     """Unload a config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def _async_update_listener(
-    hass: HomeAssistant, entry: ClaudeUsageConfigEntry
-) -> None:
+async def _async_update_listener(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) -> None:
     """Handle options update."""
     coordinator: ClaudeUsageCoordinator = entry.runtime_data
     interval = entry.options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
@@ -179,14 +175,10 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
         data["extra_usage_enabled"] = extra.get("is_enabled", False)
         data["extra_usage_percent"] = extra.get("utilization")
         data["extra_usage_credits"] = (
-            extra["used_credits"] / 100
-            if extra.get("used_credits") is not None
-            else None
+            extra["used_credits"] / 100 if extra.get("used_credits") is not None else None
         )
         data["extra_usage_limit"] = (
-            extra["monthly_limit"] / 100
-            if extra.get("monthly_limit") is not None
-            else None
+            extra["monthly_limit"] / 100 if extra.get("monthly_limit") is not None else None
         )
 
     return data

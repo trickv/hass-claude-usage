@@ -54,9 +54,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
         self._pkce_challenge: str | None = None
         self._state: str | None = None
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the user OAuth flow - single step."""
         errors: dict[str, str] = {}
 
@@ -112,8 +110,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                         data={
                             CONF_ACCESS_TOKEN: token_data["access_token"],
                             CONF_REFRESH_TOKEN: token_data.get("refresh_token", ""),
-                            CONF_EXPIRES_AT: time.time()
-                            + token_data.get("expires_in", 3600),
+                            CONF_EXPIRES_AT: time.time() + token_data.get("expires_in", 3600),
                             CONF_ACCOUNT_NAME: account_name,
                             CONF_SUBSCRIPTION_LEVEL: subscription_level,
                         },
@@ -174,9 +171,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Token exchange request failed")
             return None
 
-    async def _fetch_account_info(
-        self, access_token: str
-    ) -> tuple[str | None, str | None]:
+    async def _fetch_account_info(self, access_token: str) -> tuple[str | None, str | None]:
         """Fetch account name and subscription level from the profile API."""
         try:
             session = aiohttp_client.async_get_clientsession(self.hass)
@@ -196,9 +191,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
 
             # Get account name
             account_name = (
-                account.get("display_name")
-                or account.get("full_name")
-                or account.get("email")
+                account.get("display_name") or account.get("full_name") or account.get("email")
             )
 
             # Get subscription level
@@ -223,9 +216,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
 class ClaudeUsageOptionsFlow(OptionsFlow):
     """Handle options for Claude Usage."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
@@ -238,9 +229,9 @@ class ClaudeUsageOptionsFlow(OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_UPDATE_INTERVAL, default=current_interval
-                    ): vol.All(int, vol.Range(min=60, max=3600)),
+                    vol.Required(CONF_UPDATE_INTERVAL, default=current_interval): vol.All(
+                        int, vol.Range(min=60, max=3600)
+                    ),
                 }
             ),
         )
