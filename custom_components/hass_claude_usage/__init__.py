@@ -8,7 +8,6 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -16,6 +15,7 @@ from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    API_BETA_HEADER,
     CONF_ACCESS_TOKEN,
     CONF_EXPIRES_AT,
     CONF_REFRESH_TOKEN,
@@ -25,7 +25,6 @@ from .const import (
     OAUTH_CLIENT_ID,
     OAUTH_TOKEN_URL,
     USAGE_API_URL,
-    API_BETA_HEADER,
 )
 
 _LOGGER = logging.getLogger(__name__)

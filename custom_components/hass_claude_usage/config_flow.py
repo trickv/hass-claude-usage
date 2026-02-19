@@ -12,7 +12,6 @@ from urllib.parse import urlencode
 
 import aiohttp
 import voluptuous as vol
-
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
