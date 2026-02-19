@@ -17,7 +17,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import ClaudeUsageConfigEntry, ClaudeUsageCoordinator
-from .const import CONF_ACCOUNT_NAME, CONF_SUBSCRIPTION_LEVEL, DOMAIN, SENSOR_DEFINITIONS
+from .const import (
+    CONF_ACCOUNT_NAME,
+    CONF_SUBSCRIPTION_LEVEL,
+    DOMAIN,
+    SENSOR_DEFINITIONS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
