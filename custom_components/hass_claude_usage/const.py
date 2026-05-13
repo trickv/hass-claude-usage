@@ -23,6 +23,7 @@ CONF_REFRESH_TOKEN = "refresh_token"
 CONF_EXPIRES_AT = "expires_at"
 CONF_UPDATE_INTERVAL = "update_interval"
 CONF_ACCOUNT_NAME = "account_name"
+CONF_ACCOUNT_EMAIL = "account_email"
 CONF_SUBSCRIPTION_LEVEL = "subscription_level"
 
 # Sensor definitions: (key, name, unit, icon, device_class)

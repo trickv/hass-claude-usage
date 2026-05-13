@@ -21,7 +21,7 @@
       "exchange_failed": "Failed to exchange code for tokens. Please try again."
     },
     "abort": {
-      "already_configured": "Claude Usage is already configured",
+      "already_configured": "This Claude account is already configured",
       "reauth_successful": "Re-authentication was successful"
     }
   },
