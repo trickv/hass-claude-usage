@@ -306,7 +306,6 @@ mypy custom_components/hass_claude_usage/
 
 ### Research Sources
 
-- [Claude OAuth implementation (opencode-anthropic-auth)](https://github.com/anomalyco/opencode-anthropic-auth/blob/master/index.mjs)
 - [OpenCode OAuth usage dashboard feature request](https://github.com/anomalyco/opencode/issues/8911)
 - [Claude Code source (local installation)](file://~/.nvm/versions/node/v22.18.0/lib/node_modules/@anthropic-ai/claude-code/cli.js)
 - [Home Assistant DataUpdateCoordinator docs](https://developers.home-assistant.io/docs/integration_fetching_data)
