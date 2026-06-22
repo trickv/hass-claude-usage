@@ -170,15 +170,29 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
         data["week_sonnet_usage_percent"] = seven_day_sonnet.get("utilization")
         data["week_sonnet_reset_time"] = seven_day_sonnet.get("resets_at")
 
+    # Overage/extra usage. The older API exposes this under "extra_usage" with
+    # credits in minor currency units; the newer API (mid-2026) moved it to a
+    # top-level "spend" object. Read whichever is enabled.
     extra = raw.get("extra_usage")
-    if extra:
-        data["extra_usage_enabled"] = extra.get("is_enabled", False)
+    spend = raw.get("spend")
+    if extra and extra.get("is_enabled"):
+        divisor = 10 ** extra.get("decimal_places", 2)
+        used = extra.get("used_credits")
+        limit = extra.get("monthly_limit")
+        data["extra_usage_enabled"] = True
         data["extra_usage_percent"] = extra.get("utilization")
-        data["extra_usage_credits"] = (
-            extra["used_credits"] / 100 if extra.get("used_credits") is not None else None
-        )
-        data["extra_usage_limit"] = (
-            extra["monthly_limit"] / 100 if extra.get("monthly_limit") is not None else None
-        )
+        data["extra_usage_credits"] = used / divisor if used is not None else None
+        data["extra_usage_limit"] = limit / divisor if limit is not None else None
+    elif spend and spend.get("enabled"):
+        used = spend.get("used") or {}
+        divisor = 10 ** used.get("exponent", 2)
+        amount = used.get("amount_minor")
+        limit = spend.get("limit")
+        data["extra_usage_enabled"] = True
+        data["extra_usage_percent"] = spend.get("percent")
+        data["extra_usage_credits"] = amount / divisor if amount is not None else None
+        data["extra_usage_limit"] = limit / divisor if limit is not None else None
+    elif extra is not None or spend is not None:
+        data["extra_usage_enabled"] = False
 
     return data
