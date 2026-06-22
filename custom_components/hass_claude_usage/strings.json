@@ -10,7 +10,7 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate with Claude",
-        "description": "Your Claude authentication has expired or been revoked. [Open this link]({url}) to log in again with Anthropic.\n\nAfter authorizing, paste the new authorization code below.",
+        "description": "Re-authenticate this entry (your token expired or was revoked, or you want to switch to a different Claude account). [Open this link]({url}) to log in with Anthropic — make sure you are logged in as the account you want this entry to track. After authorizing, paste the new authorization code below.",
         "data": {
           "auth_code": "Authorization Code"
         }
@@ -22,7 +22,8 @@
     },
     "abort": {
       "already_configured": "This Claude account is already configured",
-      "reauth_successful": "Re-authentication was successful"
+      "reauth_successful": "Re-authentication was successful",
+      "reconfigure_successful": "Re-authentication was successful"
     }
   },
   "options": {

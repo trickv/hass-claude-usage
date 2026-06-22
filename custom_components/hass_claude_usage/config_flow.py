@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 import aiohttp
 import voluptuous as vol
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
@@ -216,6 +217,12 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle reauth when token is invalid."""
         return await self.async_step_reauth_confirm()
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle user-initiated reconfigure (e.g. re-auth as a different account)."""
+        return await self.async_step_reauth_confirm(user_input)
+
     async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -255,8 +262,13 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                         await self._fetch_account_info(token_data["access_token"])
                     )
 
+                    entry = (
+                        self._get_reconfigure_entry()
+                        if self.source == SOURCE_RECONFIGURE
+                        else self._get_reauth_entry()
+                    )
                     return self.async_update_reload_and_abort(
-                        self._get_reauth_entry(),
+                        entry,
                         data_updates={
                             CONF_ACCESS_TOKEN: token_data["access_token"],
                             CONF_REFRESH_TOKEN: token_data.get("refresh_token", ""),
