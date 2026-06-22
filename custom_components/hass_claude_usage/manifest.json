@@ -8,5 +8,5 @@
   "issue_tracker": "https://github.com/trickv/hass-claude-usage/issues",
   "requirements": [],
   "single_config_entry": false,
-  "version": "6"
+  "version": "7"
 }
