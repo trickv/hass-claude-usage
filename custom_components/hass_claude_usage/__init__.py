@@ -109,7 +109,7 @@ class ClaudeUsageCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         refresh_token = self.config_entry.data.get(CONF_REFRESH_TOKEN)
         if not refresh_token:
-            raise UpdateFailed("No refresh token available")
+            raise ConfigEntryAuthFailed("No refresh token available")
 
         payload = {
             "grant_type": "refresh_token",
