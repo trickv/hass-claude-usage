@@ -4,6 +4,7 @@
   "codeowners": ["@trickv"],
   "config_flow": true,
   "documentation": "https://github.com/trickv/hass-claude-usage",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/trickv/hass-claude-usage/issues",
   "requirements": [],

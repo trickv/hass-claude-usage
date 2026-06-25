@@ -1,0 +1,8 @@
+{
+  "typeCheckingMode": "standard",
+  // HA exposes entity props (available, native_value) as cached_property; the
+  // documented CoordinatorEntity pattern overrides them as dynamic @property.
+  "reportIncompatibleVariableOverride": false,
+  // Standard HA usage imports some helpers flagged as private.
+  "reportPrivateImportUsage": false
+}
