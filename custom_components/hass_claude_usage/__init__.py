@@ -117,8 +117,7 @@ class ClaudeUsageCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             session = aiohttp_client.async_get_clientsession(self.hass)
             resp = await session.post(
                 OAUTH_TOKEN_URL,
-                data=payload,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                json=payload,
                 timeout=aiohttp.ClientTimeout(total=15),
             )
             if not resp.ok:
