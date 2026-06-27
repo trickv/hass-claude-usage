@@ -197,9 +197,7 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
             account_email = account.get("email")
 
             # Get account name (prefer display name, fall back to email)
-            account_name = (
-                account.get("display_name") or account.get("full_name") or account_email
-            )
+            account_name = account.get("display_name") or account.get("full_name") or account_email
 
             # Get subscription level
             subscription_level = None
@@ -267,8 +265,20 @@ class ClaudeUsageConfigFlow(ConfigFlow, domain=DOMAIN):
                         if self.source == SOURCE_RECONFIGURE
                         else self._get_reauth_entry()
                     )
+
+                    # Both reauth and reconfigure may re-point an entry at a
+                    # different account, so guard against two entries ending up
+                    # tracking the same account.
+                    new_unique_id = account_email or account_name
+                    if new_unique_id and any(
+                        other.entry_id != entry.entry_id and other.unique_id == new_unique_id
+                        for other in self._async_current_entries()
+                    ):
+                        return self.async_abort(reason="already_configured")
+
                     return self.async_update_reload_and_abort(
                         entry,
+                        unique_id=new_unique_id or entry.unique_id,
                         data_updates={
                             CONF_ACCESS_TOKEN: token_data["access_token"],
                             CONF_REFRESH_TOKEN: token_data.get("refresh_token", ""),
