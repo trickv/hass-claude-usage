@@ -184,14 +184,21 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
         data["extra_usage_credits"] = used / divisor if used is not None else None
         data["extra_usage_limit"] = limit / divisor if limit is not None else None
     elif spend and spend.get("enabled"):
+        # In the "spend" schema both "used" and "limit" are money objects of the
+        # form {"amount_minor": int, "currency": str, "exponent": int}; "limit"
+        # may be null when no cap is set. "percent" is already 0-100.
         used = spend.get("used") or {}
-        divisor = 10 ** used.get("exponent", 2)
+        limit = spend.get("limit") or {}
+        used_divisor = 10 ** used.get("exponent", 2)
+        limit_divisor = 10 ** limit.get("exponent", 2)
         amount = used.get("amount_minor")
-        limit = spend.get("limit")
+        limit_amount = limit.get("amount_minor")
         data["extra_usage_enabled"] = True
         data["extra_usage_percent"] = spend.get("percent")
-        data["extra_usage_credits"] = amount / divisor if amount is not None else None
-        data["extra_usage_limit"] = limit / divisor if limit is not None else None
+        data["extra_usage_credits"] = amount / used_divisor if amount is not None else None
+        data["extra_usage_limit"] = (
+            limit_amount / limit_divisor if limit_amount is not None else None
+        )
     elif extra is not None or spend is not None:
         data["extra_usage_enabled"] = False
 
