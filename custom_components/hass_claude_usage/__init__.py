@@ -18,6 +18,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     API_BETA_HEADER,
     CONF_ACCESS_TOKEN,
+    CONF_ACCOUNT_ID,
     CONF_EXPIRES_AT,
     CONF_REFRESH_TOKEN,
     CONF_UPDATE_INTERVAL,
@@ -25,6 +26,7 @@ from .const import (
     DOMAIN,
     OAUTH_CLIENT_ID,
     OAUTH_TOKEN_URL,
+    PROFILE_API_URL,
     USAGE_API_URL,
 )
 
@@ -33,6 +35,116 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR]
 
 type ClaudeUsageConfigEntry = ConfigEntry[ClaudeUsageCoordinator]
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) -> bool:
+    """Migrate an old config entry to the current version.
+
+    v1 entries were keyed by the static DOMAIN string (and, on installs created
+    after multi-account support landed, by email). v2 keys each entry by a
+    stable per-account identifier so the duplicate-account check works for
+    installs that predate multi-account support, without requiring a reauth.
+
+    Migration approach contributed by @thematrixdev in #9.
+    """
+    if entry.version > 1:
+        return True
+
+    _LOGGER.debug("Migrating Claude Usage config entry %s from v1 to v2", entry.entry_id)
+    account_id = await _resolve_account_id(hass, entry)
+    hass.config_entries.async_update_entry(
+        entry,
+        data={**entry.data, CONF_ACCOUNT_ID: account_id},
+        unique_id=account_id,
+        version=2,
+    )
+    _LOGGER.info("Migrated Claude Usage config entry to v2 (account_id=%s)", account_id)
+    return True
+
+
+async def _resolve_account_id(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) -> str:
+    """Resolve a stable account id during migration.
+
+    Tries the stored access token, refreshing once on a 401. Falls back to the
+    entry_id as a sentinel when the account cannot be identified; a later reauth
+    replaces the sentinel with the real account id.
+    """
+    session = aiohttp_client.async_get_clientsession(hass)
+    access_token = entry.data.get(CONF_ACCESS_TOKEN)
+
+    for attempt in ("current", "refreshed"):
+        if not access_token:
+            break
+        try:
+            resp = await session.get(
+                PROFILE_API_URL,
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "anthropic-beta": API_BETA_HEADER,
+                },
+                timeout=aiohttp.ClientTimeout(total=15),
+            )
+            if resp.ok:
+                account = (await resp.json()).get("account") or {}
+                account_id = account.get("uuid") or account.get("id") or account.get("email")
+                if account_id:
+                    return account_id
+                break
+            # An expired token returns 401 — refresh once and retry.
+            if resp.status == 401 and attempt == "current":
+                access_token = await _refresh_token_for_migration(hass, session, entry)
+                continue
+            break
+        except aiohttp.ClientError:
+            _LOGGER.warning("Profile fetch failed during migration (attempt=%s)", attempt)
+            break
+
+    _LOGGER.warning(
+        "Migration could not identify the account; using entry_id as a placeholder. "
+        "Re-authenticate the entry to assign its real account id."
+    )
+    return entry.entry_id
+
+
+async def _refresh_token_for_migration(
+    hass: HomeAssistant,
+    session: aiohttp.ClientSession,
+    entry: ClaudeUsageConfigEntry,
+) -> str | None:
+    """Refresh the access token during migration; persist and return it, or None."""
+    refresh_token = entry.data.get(CONF_REFRESH_TOKEN)
+    if not refresh_token:
+        return None
+    try:
+        resp = await session.post(
+            OAUTH_TOKEN_URL,
+            json={
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": OAUTH_CLIENT_ID,
+            },
+            timeout=aiohttp.ClientTimeout(total=15),
+        )
+        if not resp.ok:
+            return None
+        token_data = await resp.json()
+    except aiohttp.ClientError:
+        _LOGGER.warning("Token refresh failed during migration")
+        return None
+
+    new_token = token_data.get("access_token")
+    if not new_token:
+        return None
+    hass.config_entries.async_update_entry(
+        entry,
+        data={
+            **entry.data,
+            CONF_ACCESS_TOKEN: new_token,
+            CONF_REFRESH_TOKEN: token_data.get("refresh_token", refresh_token),
+            CONF_EXPIRES_AT: time.time() + token_data.get("expires_in", 3600),
+        },
+    )
+    return new_token
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ClaudeUsageConfigEntry) -> bool:
