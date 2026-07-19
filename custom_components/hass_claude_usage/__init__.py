@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import aiohttp_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import slugify
 
 from .const import (
     API_BETA_HEADER,
@@ -317,4 +318,68 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
     elif extra is not None or spend is not None:
         data["extra_usage_enabled"] = False
 
+    data["limits"] = _parse_limits(raw.get("limits"))
+
     return data
+
+
+def _parse_limits(limits: list[dict[str, Any]] | None) -> dict[str, dict[str, Any]]:
+    """Parse the top-level limits[] array into a dict keyed by stable bucket key.
+
+    The flat seven_day_* keys in the payload are null placeholders on every
+    account tested (they even include feature-flag codenames); the live
+    per-scope meters exist only in this array. Buckets are keyed by
+    kind + model + surface so new models/surfaces appear automatically.
+    scope.model.id is null in current payloads, so display_name is the only
+    model identifier — a model rename therefore creates a new bucket (the old
+    one goes unavailable; recorder history is preserved).
+    """
+    parsed: dict[str, dict[str, Any]] = {}
+    for entry in limits or []:
+        if not isinstance(entry, dict):
+            continue
+        kind = entry.get("kind")
+        if not kind:
+            continue
+        scope = entry.get("scope") or {}
+        model = (scope.get("model") or {}).get("display_name")
+        surface = scope.get("surface")
+
+        key_parts = [str(kind)]
+        label_parts: list[str] = []
+        if kind == "session":
+            label_parts.append("Session Limit")
+        elif kind == "weekly_all":
+            label_parts.append("Weekly All Models Limit")
+        elif kind == "weekly_scoped":
+            label_parts.append("Weekly")
+        else:
+            label_parts.append(str(kind).replace("_", " ").title())
+        if model:
+            key_parts.append(slugify(model))
+            if kind == "weekly_scoped":
+                label_parts.append(f"{model} Limit")
+            else:
+                label_parts.append(model)
+        elif kind == "weekly_scoped":
+            label_parts.append("Scoped Limit")
+        if surface:
+            key_parts.append(slugify(str(surface)))
+            label_parts.append(f"({surface})")
+
+        key = "_".join(key_parts)
+        if key in parsed:
+            # Defensive: identical bucket appearing twice — keep the first.
+            continue
+        parsed[key] = {
+            "label": " ".join(label_parts),
+            "percent": entry.get("percent"),
+            "resets_at": entry.get("resets_at"),
+            "severity": entry.get("severity"),
+            "is_active": entry.get("is_active"),
+            "kind": kind,
+            "group": entry.get("group"),
+            "model": model,
+            "surface": surface,
+        }
+    return parsed

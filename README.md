@@ -12,6 +12,7 @@ A custom Home Assistant integration that monitors your Claude (Anthropic) subscr
 - **Weekly Reset Time** - When the weekly limit resets
 - **Weekly Sonnet Usage** - Current 7-day Sonnet utilization (%)
 - **Weekly Sonnet Reset Time** - When the Sonnet weekly limit resets
+- **Per-bucket limit sensors (dynamic)** - One sensor per entry in the API's `limits[]` array, created automatically as buckets appear: e.g. **Session Limit Usage**, **Weekly All Models Limit Usage**, **Weekly Fable Limit Usage**. State is the bucket's percent; `resets_at`, `severity`, `is_active`, `kind`, `model`, and `surface` are attributes. New models or surfaces appear as new sensors with no integration update; buckets that disappear from the payload read unavailable (history is preserved). Note: a model rename by Anthropic creates a new sensor (the API exposes no stable model id — `display_name` is the only identifier).
 - **Extra Usage Enabled** - Whether extra usage is enabled
 - **Extra Usage** - Extra usage utilization (%)
 - **Extra Usage Credits** - Credits consumed this month
