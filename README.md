@@ -22,11 +22,10 @@ A custom Home Assistant integration that monitors your Claude (Anthropic) subscr
 
 ### HACS (recommended)
 
-1. Add this repository as a custom repository in HACS
+1. Search for "Claude Usage" in HACS and install it
 2. Restart Home Assistant
-3. Install "Claude Usage"
-4. Go to Settings → Devices & Services → Add Integration → "Claude Usage"
-5. Follow the instructions
+3. Go to Settings → Devices & Services → Add Integration → "Claude Usage"
+4. Follow the instructions
 
 ### Manual
 
