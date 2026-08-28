@@ -27,6 +27,11 @@ jobs:
         run: |
           python -m py_compile custom_components/hass_claude_usage/*.py
 
+      - name: Run unit tests
+        run: |
+          pip install pytest
+          pytest tests/
+
       - name: Run ruff (linter)
         run: |
           ruff check custom_components/hass_claude_usage/
