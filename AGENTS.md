@@ -115,7 +115,7 @@ Refactored from a standalone daemon concept originally explored in the `cc-playg
 - Token: `https://console.anthropic.com/v1/oauth/token`
 - Redirect URI: `https://console.anthropic.com/oauth/code/callback`
 
-**Scopes:** `org:create_api_key user:profile user:inference user:sessions:claude_code`
+**Scopes:** `user:profile` (the usage and profile endpoints need nothing more; broader scopes like `org:create_api_key` and `user:inference` are deliberately not requested)
 
 **Flow:** OAuth 2.0 Authorization Code with PKCE (SHA-256)
 
