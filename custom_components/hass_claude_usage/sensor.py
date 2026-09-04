@@ -12,17 +12,12 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import ClaudeUsageConfigEntry, ClaudeUsageCoordinator
-from .const import (
-    CONF_ACCOUNT_NAME,
-    CONF_SUBSCRIPTION_LEVEL,
-    DOMAIN,
-    SENSOR_DEFINITIONS,
-)
+from .const import SENSOR_DEFINITIONS
+from .entity import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,24 +85,7 @@ class ClaudeUsageSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEntity)
         elif unit is not None:
             self._attr_state_class = SensorStateClass.MEASUREMENT
 
-        # Build device name with account name and subscription level
-        account_name = entry.data.get(CONF_ACCOUNT_NAME)
-        subscription_level = entry.data.get(CONF_SUBSCRIPTION_LEVEL)
-
-        device_name_parts = ["Claude Usage"]
-        if account_name:
-            device_name_parts.append(f"({account_name}")
-            if subscription_level:
-                device_name_parts.append(f"- {subscription_level})")
-            else:
-                device_name_parts[-1] += ")"
-        device_name = " ".join(device_name_parts)
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=device_name,
-            entry_type=DeviceEntryType.SERVICE,
-        )
+        self._attr_device_info = build_device_info(entry)
 
     @property
     def available(self) -> bool:
@@ -164,22 +142,7 @@ class ClaudeUsageLimitSensor(CoordinatorEntity[ClaudeUsageCoordinator], SensorEn
         self._attr_unique_id = f"{entry.entry_id}_limit_{key}"
         self._attr_name = f"{label} Usage"
 
-        account_name = entry.data.get(CONF_ACCOUNT_NAME)
-        subscription_level = entry.data.get(CONF_SUBSCRIPTION_LEVEL)
-        device_name_parts = ["Claude Usage"]
-        if account_name:
-            device_name_parts.append(f"({account_name}")
-            if subscription_level:
-                device_name_parts.append(f"- {subscription_level})")
-            else:
-                device_name_parts[-1] += ")"
-        device_name = " ".join(device_name_parts)
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=device_name,
-            entry_type=DeviceEntryType.SERVICE,
-        )
+        self._attr_device_info = build_device_info(entry)
 
     def _bucket(self) -> dict[str, Any] | None:
         limits = (self.coordinator.data or {}).get("limits") or {}
