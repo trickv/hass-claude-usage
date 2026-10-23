@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+import math
 import time
 from datetime import UTC, datetime, timedelta
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import aiohttp
@@ -34,6 +36,26 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR]
+
+
+def _token_retry_delay(value: str | None) -> float:
+    """Parse Retry-After seconds or an HTTP date, with defensive bounds."""
+    if not value:
+        return 60
+    try:
+        delay = float(value)
+    except (TypeError, ValueError):
+        try:
+            retry_at = parsedate_to_datetime(value)
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=UTC)
+            delay = retry_at.timestamp() - time.time()
+        except (TypeError, ValueError, OverflowError):
+            return 60
+    if not math.isfinite(delay):
+        return 60
+    return max(30, min(delay, 900))
+
 
 type ClaudeUsageConfigEntry = ConfigEntry[ClaudeUsageCoordinator]
 
@@ -189,6 +211,7 @@ class ClaudeUsageCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             config_entry=entry,
             always_update=False,
         )
+        self._token_retry_at = 0.0
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch usage data from the API."""
@@ -224,6 +247,9 @@ class ClaudeUsageCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not refresh_token:
             raise ConfigEntryAuthFailed("No refresh token available")
 
+        if time.monotonic() < self._token_retry_at:
+            raise UpdateFailed("Token refresh is temporarily deferred")
+
         payload = {
             "grant_type": "refresh_token",
             "refresh_token": refresh_token,
@@ -232,25 +258,61 @@ class ClaudeUsageCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         try:
             session = aiohttp_client.async_get_clientsession(self.hass)
-            resp = await session.post(
+            async with session.post(
                 OAUTH_TOKEN_URL,
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=15),
-            )
-            if not resp.ok:
-                raise ConfigEntryAuthFailed(f"Token refresh failed ({resp.status})")
-            token_data = await resp.json()
-        except aiohttp.ClientError as err:
-            raise UpdateFailed(f"Token refresh request failed: {err}") from err
+            ) as resp:
+                if resp.status in (401, 403):
+                    raise ConfigEntryAuthFailed(f"Token refresh rejected ({resp.status})")
+                if resp.status == 400:
+                    try:
+                        error_data = await resp.json()
+                    except (aiohttp.ClientError, ValueError):
+                        error_data = {}
+                    error = error_data.get("error") if isinstance(error_data, dict) else None
+                    if isinstance(error, dict):
+                        error = error.get("type")
+                    if error == "invalid_grant":
+                        raise ConfigEntryAuthFailed("Refresh token rejected")
+                if not resp.ok:
+                    delay = _token_retry_delay(resp.headers.get("Retry-After"))
+                    self._token_retry_at = time.monotonic() + delay
+                    raise UpdateFailed(f"Token endpoint temporarily unavailable ({resp.status})")
+                token_data = await resp.json()
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+            self._token_retry_at = time.monotonic() + 60
+            raise UpdateFailed(f"Token refresh request failed: {type(err).__name__}") from None
 
-        if "access_token" not in token_data:
-            raise ConfigEntryAuthFailed("Token refresh response missing access_token")
+        if (
+            not isinstance(token_data, dict)
+            or not isinstance(token_data.get("access_token"), str)
+            or not token_data["access_token"]
+        ):
+            self._token_retry_at = time.monotonic() + 60
+            raise UpdateFailed("Token refresh response missing a valid access token")
 
+        try:
+            expires_in = float(token_data.get("expires_in", 3600))
+            if not math.isfinite(expires_in) or expires_in <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            self._token_retry_at = time.monotonic() + 60
+            raise UpdateFailed("Token refresh response has an invalid expiration") from None
+
+        new_refresh_token = token_data.get(CONF_REFRESH_TOKEN, refresh_token)
+        if new_refresh_token is None:
+            new_refresh_token = refresh_token
+        if not isinstance(new_refresh_token, str) or not new_refresh_token:
+            self._token_retry_at = time.monotonic() + 60
+            raise UpdateFailed("Token refresh response has an invalid refresh token")
+
+        self._token_retry_at = 0
         new_data = {
             **self.config_entry.data,
             CONF_ACCESS_TOKEN: token_data["access_token"],
-            CONF_REFRESH_TOKEN: token_data.get("refresh_token", refresh_token),
-            CONF_EXPIRES_AT: time.time() + token_data.get("expires_in", 3600),
+            CONF_REFRESH_TOKEN: new_refresh_token,
+            CONF_EXPIRES_AT: time.time() + expires_in,
         }
         self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
 
