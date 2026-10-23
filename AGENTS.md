@@ -197,9 +197,15 @@ challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 ### Error Handling
 
 **Token Refresh Failures:**
-- Log detailed error with HTTP status and body
-- Raise `UpdateFailed` to mark sensors unavailable
-- User must reconfigure integration (no auto-retry)
+- Rate limits, server errors, transport failures and malformed responses raise
+  `UpdateFailed`; they do not invalidate the stored credentials.
+- HTTP 401/403, a rejected `invalid_grant`, or a missing refresh token still
+  trigger reauthentication.
+- Running coordinators defer repeated attempts using `Retry-After` seconds or
+  an HTTP date, bounded to 30–900 seconds (60 seconds by default). Initial entry
+  setup still follows Home Assistant's own setup retry schedule.
+- Report only status codes or exception types, never token payloads, raw
+  response bodies or exception details that could contain credentials.
 
 **API Fetch Failures:**
 - Temporary network errors: raise `UpdateFailed`, retry on next interval
