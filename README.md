@@ -17,6 +17,7 @@ A custom Home Assistant integration that monitors your Claude (Anthropic) subscr
 - **Extra Usage** - Extra usage utilization (%)
 - **Extra Usage Credits** - Credits consumed this month
 - **Extra Usage Limit** - Monthly credit limit
+- **Credit Remaining** / **Credit Limit** / **Credit Reset Time** - The plan's dollar credit grant (USD left, its size, and when it resets), where the account has one
 
 ## Installation
 
