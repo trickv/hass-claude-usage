@@ -33,6 +33,28 @@ def test_grant_parsed_under_any_key():
         }
 
 
+WINDOW = {
+    "utilization": 8.0,
+    "resets_at": "2026-11-09T23:50:00+00:00",
+    "limit_dollars": None,
+    "used_dollars": None,
+    "remaining_dollars": None,
+    "locked_reason": None,
+}
+
+
+def test_grant_found_after_windows_with_null_dollars():
+    credit = _load_credit()
+    raw = {"five_hour": WINDOW, "seven_day": WINDOW, "iguana_necktie": GRANT}
+    assert credit.parse_credit(raw)["credit_limit"] == 100
+
+
+def test_windows_with_null_dollars_are_not_a_grant():
+    credit = _load_credit()
+    raw = {"five_hour": WINDOW, "seven_day": WINDOW, "iguana_necktie": None}
+    assert credit.parse_credit(raw) == {}
+
+
 def test_no_grant_leaves_sensors_unavailable():
     credit = _load_credit()
     assert credit.parse_credit({"five_hour": {"utilization": 1}, "tangelo": None}) == {}
