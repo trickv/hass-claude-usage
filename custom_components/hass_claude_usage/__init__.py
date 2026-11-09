@@ -30,6 +30,7 @@ from .const import (
     PROFILE_API_URL,
     USAGE_API_URL,
 )
+from .credit import parse_credit
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -318,6 +319,7 @@ def _parse_usage(raw: dict[str, Any]) -> dict[str, Any]:
     elif extra is not None or spend is not None:
         data["extra_usage_enabled"] = False
 
+    data.update(parse_credit(raw))
     data["limits"] = _parse_limits(raw.get("limits"))
 
     return data

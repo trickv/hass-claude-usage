@@ -71,5 +71,8 @@ SENSOR_DEFINITIONS = [
         "mdi:credit-card-settings",
         None,
     ),
+    ("credit_remaining", "Credit Remaining", "USD", "mdi:cash", None),
+    ("credit_limit", "Credit Limit", "USD", "mdi:cash-multiple", None),
+    ("credit_reset_time", "Credit Reset Time", None, "mdi:cash-clock", "timestamp"),
     ("api_error", "API Error", "errors", "mdi:alert-circle", None),
 ]
